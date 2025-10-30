@@ -20,8 +20,8 @@ def get_cifar10_loaders(batch_size):
 
     train_dset = datasets.CIFAR10(root='.', train=True, download=True, transform=train_transform)
     test_dset = datasets.CIFAR10(root='.', train=False, download=True, transform=valid_transform)
-    train_loader = torch.utils.data.DataLoader(train_dset, batch_size=batch_size, shuffle=True)
-    test_loader = torch.utils.data.DataLoader(test_dset, batch_size=batch_size, shuffle=False)
+    train_loader = torch.utils.data.DataLoader(train_dset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
+    test_loader = torch.utils.data.DataLoader(test_dset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
 
     return train_loader, test_loader
 

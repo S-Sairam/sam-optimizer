@@ -12,6 +12,22 @@ from src.data import get_cifar10_loaders
 from src.model import get_wrn_28_10
 
 
+def evaluate(model, val_loader, criterion, device):
+    model.eval()
+    with torch.no_grad() :
+        val_loss = 0
+        total_samples = 0
+        correct_predictions = 0
+        for batch_idx, (inputs,targets) in enumerate(val_loader):
+            inputs, targets = inputs.to(device), targets.to(device)
+            outputs = model(inputs)
+            val_loss += criterion(outputs,targets).item()
+            _, predicted = torch.max(outputs.data, 1)
+            correct_predictions += (predicted == targets).sum().item()
+            total_samples += targets.size(0)
+        val_accuracy = correct_predictions / total_samples
+    return val_loss/len(val_loader), val_accuracy*100.00
+
 def train(args):
     """ Main training function """
     wandb.init(
@@ -22,17 +38,17 @@ def train(args):
     print(f"Starting training with learning rate: {wandb.config.learning_rate}")
 
     print("Setting up the experiment...")
-    
+
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    
+
     train_loader, val_loader = get_cifar10_loaders(batch_size=wandb.config.batch_size)
-    
+
     model = get_wrn_28_10().to(device)
-    
+
     criterion = nn.CrossEntropyLoss()
-    
+
     optimizer = optim.SGD(model.parameters(), lr=wandb.config.learning_rate, momentum=0.9, weight_decay=5e-4)
-    
+
     print("Starting training...")
     for epoch in range(wandb.config.epochs):
         model.train()
@@ -44,8 +60,9 @@ def train(args):
             loss.backward()
             optimizer.step()
             wandb.log({"train_loss": loss.item()})
-        print(f"Epoch {epoch+1}/{wandb.config.epochs} | Loss: {loss.item():.4f}")
-
+        val_loss, val_accuracy = evaluate(model,val_loader, criterion, device)
+        print(f"Epoch {epoch+1}/{wandb.config.epochs} | Loss: {loss.item():.4f} | val_loss: {val_loss} | val_accuracy: {val_accuracy}")
+        wandb.log({"val_loss": val_loss, "val_accuracy": val_accuracy, "epoch": epoch})
     print("Finished training.")
     wandb.finish()
 

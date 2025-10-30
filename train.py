@@ -1,6 +1,6 @@
 # --- Standard Libraries ---
 import argparse
-
+import time 
 # --- Third-Party Libraries ---
 import torch
 import torch.nn as nn
@@ -58,20 +58,21 @@ def train(args):
         model.train()
         progress_bar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{wandb.config.epochs}")
         for batch_idx, (inputs, targets) in enumerate(progress_bar):
+            
             inputs, targets = inputs.to(device), targets.to(device)
             outputs = model(inputs)
             loss = criterion(outputs, targets)
             loss.backward()
             optimizer.first_step(zero_grad=True)
-           # SECOND FORWARD/BACKWARD PASS (at w + e(w))
             criterion(model(inputs), targets).backward()
             optimizer.second_step(zero_grad=True)
             wandb.log({"train_loss": loss.item()})
             progress_bar.set_postfix(loss=loss.item())
+        
         val_loss, val_accuracy = evaluate(model,val_loader, criterion, device)
-        scheduler.step()
+        wandb.log({"val_loss": val_loss, "val_accuracy": val_accuracy, "epoch": epoch, "lr": scheduler.get_last_lr()[0]})
         print(f"Epoch {epoch+1}/{wandb.config.epochs} | Loss: {loss.item():.4f} | val_loss: {val_loss} | val_accuracy: {val_accuracy}")
-        wandb.log({"val_loss": val_loss, "val_accuracy": val_accuracy, "epoch": epoch})
+        scheduler.step()
     
     print("Finished training.")
     wandb.finish()

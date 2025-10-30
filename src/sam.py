@@ -14,9 +14,9 @@ class SAM(torch.optim.Optimizer):
         shared_device = self.param_groups[0]["params"][0].device 
         norm_sum_sq = torch.tensor(0.0, device=shared_device)
 
-        for group in self.param_groups :
+        for group in self.param_groups:
             for p in group["params"]:
-                if p.grad is None : continue
+                if p.grad is None: continue
                 grad = p.grad
                 p_norm = grad.norm(p=2)
                 p_norm_sq = p_norm.pow(2)

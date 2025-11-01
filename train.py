@@ -1,6 +1,7 @@
 # --- Standard Libraries ---
 import argparse
 import time 
+import os
 # --- Third-Party Libraries ---
 import torch
 import torch.nn as nn
@@ -12,6 +13,10 @@ from tqdm import tqdm
 from src.data import get_cifar10_loaders
 from src.model import get_wrn_28_10
 from src.sam import SAM
+
+def save_checkpoint(state, filename="checkpoint.pth.tar"):
+    print("=> Saving checkpoint")
+    torch.save(state, filename)
 
 def evaluate(model, val_loader, criterion, device):
     model.eval()
@@ -52,9 +57,19 @@ def train(args):
 
     scheduler = CosineAnnealingLR(optimizer, T_max = 200)
 
+    start_epoch = 0
+    if os.path.isfile("checkpoint.pth.tar"):
+        print("=> loading checkpoint 'checkpoint.pth.tar'")
+        checkpoint = torch.load("checkpoint.pth.tar", weights_only=False)
+        start_epoch = checkpoint['epoch']
+        model.load_state_dict(checkpoint['state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer'])
+        print(f"=> loaded checkpoint 'checkpoint.pth.tar' (epoch {checkpoint['epoch']})")
+    else:
+        print("=> no checkpoint found, starting from scratch")
 
     print("Starting training...")
-    for epoch in range(wandb.config.epochs):
+    for epoch in range(start_epoch, wandb.config.epochs):
         model.train()
         progress_bar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{wandb.config.epochs}")
         for batch_idx, (inputs, targets) in enumerate(progress_bar):
@@ -72,7 +87,14 @@ def train(args):
         val_loss, val_accuracy = evaluate(model,val_loader, criterion, device)
         wandb.log({"val_loss": val_loss, "val_accuracy": val_accuracy, "epoch": epoch, "lr": scheduler.get_last_lr()[0]})
         print(f"Epoch {epoch+1}/{wandb.config.epochs} | Loss: {loss.item():.4f} | val_loss: {val_loss} | val_accuracy: {val_accuracy}")
+        optimizer.step()
         scheduler.step()
+        save_checkpoint({
+        'epoch': epoch + 1,
+        'state_dict': model.state_dict(),
+        'optimizer': optimizer.state_dict(),
+        'best_accuracy': val_accuracy,
+        })
     
     print("Finished training.")
     wandb.finish()

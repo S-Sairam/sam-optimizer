@@ -46,3 +46,17 @@ class SAM(torch.optim.Optimizer):
         self.base_optimizer.step()
 
         if zero_grad: self.zero_grad()
+
+    def step(self, closure=None):
+        pass
+
+
+
+
+    """
+    Dummy step function to be compatible with PyTorch LRSchedulers.
+    The real work is done in first_step and second_step.
+    """
+    # The scheduler will call this to increment its internal counter.
+    # We don't need to do anything here because the base_optimizer.step()
+    # is called inside second_step().

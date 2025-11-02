@@ -65,7 +65,7 @@ The goal is to reproduce the paper's reported accuracy for a Wide-ResNet-28-10 o
 
 | Model / Experiment | Reported Test Accuracy (%) |
 | :--- | :---: |
-| **SAM (Foret et al., ICLR 2021)** | **~95.14** |
+| **SAM (Foret et al., ICLR 2021)** | **~97.3** |
 | **This Replication** | **[IN PROGRESS]** |
 
 The full, transparent logs for the official replication run are publicly available on Weights & Bienses.

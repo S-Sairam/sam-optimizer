@@ -66,9 +66,9 @@ The goal is to reproduce the paper's reported accuracy for a Wide-ResNet-28-10 o
 | Model / Experiment | Reported Test Accuracy (%) |
 | :--- | :---: |
 | **SAM (Foret et al., ICLR 2021)** | **~97.3** |
-| **This Replication** | **[IN PROGRESS]** |
+| **This Replication** | **~96.74** |
 
 The full, transparent logs for the official replication run are publicly available on Weights & Bienses.
 
-[**View the Live Experiment on Weights & Biases**](https://wandb.ai/pesu-ai-ml/sam-replication-cifar10)
+[**View the Run on Weights & Biases**](https://wandb.ai/pesu-ai-ml/sam-replication-cifar10/runs/mjyz5xy4)
 
